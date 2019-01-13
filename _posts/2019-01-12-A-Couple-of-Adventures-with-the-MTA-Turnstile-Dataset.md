@@ -75,13 +75,12 @@ When I timed the first block, it took 3.59 seconds to complete. The second block
 
 After the project was completed, I decided to go down a rabbit hole. I've heard in the past that many phenomena in nature happen to follow a Pareto distribution, e.g. wealth distribution, the population distribution between human settlements. When I looked at a graph of the most trafficked stations ordered by popularity, it seemed to follow a similar pattern. The below graph shows the total foot traffic for roughly the month of May.
 
-![Stations by Total Foot Traffic](images/Pareto?.svg)
+![Stations by Total Foot Traffic](images/Pareto.svg)
 
 ### The Pareto Distribution
 
 The Pareto Distribution is a probability distribution which is notable for its description of many natural phenomena, as well as its inability to be adequately described by common summary statistics such as mean and standard deviation. 
 
-![Pareto Variable](images/pareto_equation.png)
 ![Pareto Distribution](/images/Probability_density_function_of_Pareto_distribution.svg.png)
 
 As can be seen from the above image, it is a power law distribution. For that reason, I will end up attempting to fit a general power distribution to the 
