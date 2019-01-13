@@ -104,7 +104,7 @@ After doing a little bit of research, I learned that the tails of power-law dist
 
 ![Second Attempt](images/fit_second_attempt.svg)
 
-This definitely still shows that same behavior as before (i.e., over --> under --> over), but this deviation appears to be much less severe than in the first fit. This is actually quite promising.
+This definitely still shows that same behavior as before (i.e., under --> over --> under), but this deviation appears to be much less severe than in the first fit. This is actually quite promising.
 
 ### Conclusion?
 
