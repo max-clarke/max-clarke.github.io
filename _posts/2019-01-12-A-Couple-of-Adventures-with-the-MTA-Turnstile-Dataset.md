@@ -7,7 +7,7 @@ Title: A Couple of Adventures with the MTA Dataset
 
 When I started my first week at Metis Data Science Bootcamp, I learned about the first project I would have to complete: exploratory data analysis (EDA) on the [MTA Turnstile
 dataset](http://web.mta.info/developers/turnstile.html). The point of the
-project was to advise a fictitious non-profit on the best stations and times to place their street teams advertising their summer gala, their main fundraiser. I learned a lot about EDA, and I'd like to share a few interesting things I learned along the way. 
+project was to advise a fictitious non-profit on the best stations and times to place their street teams advertising their summer gala, their main fundraiser. I learned a lot about EDA, and I'd like to share a few interesting things I learned along the way. To perform the data analysis, we used python and jupyter notebooks, with an emphasis on the pandas and matplotlib libraries.
 
 ## Using the .diff() method
 
