@@ -6,12 +6,13 @@ Title: A Couple of Adventures with the MTA Dataset
 # Introduction
 
 When I started my first week at Metis Data Science Bootcamp, I learned about the first project I would have to complete: exploratory data analysis (EDA) on the [MTA Turnstile
-dataset](http://web.mta.info/developers/turnstile.html). The point of the
-project was to advise a fictitious non-profit on the best stations and times to place their street teams advertising their summer gala, their main fundraiser. I learned a lot about EDA, and I'd like to share a few interesting things I learned along the way. To perform the data analysis, we used python and jupyter notebooks, with an emphasis on the pandas and matplotlib libraries.
+dataset](http://web.mta.info/developers/turnstile.html). The point of the project was to advise a fictitious non-profit on the best stations and times to place their street teams advertising their summer gala, their main fundraiser. I learned a lot about EDA, and I'd like to share a few interesting things I learned along the way. I won't go into the results of that analysis. Rather, this post is about a couple of tangents which caught my attention. 
+
+This post is split into two parts: an examination of the .diff() method in pandas, and a cursory exploration of whether the distribution of ridership among the subway stations of the MTA follow an Pareto distribution, or more generally a power law. To perform the data analysis, we used python and jupyter notebooks, with an emphasis on the pandas and matplotlib libraries.
 
 ## Using the .diff() method
 
-My two partners and I decided on the modest of goal of figuring out which station had the largest amount of traffic over roughly the period of May 2018. This ended up being a more difficult task than it at first sounded. The trouble was that the columns in the dataset which were labeled 'ENTRIES' and 'EXITS' were cumulative counts over long stretches of time. Some of these values were in the 100's of billions. Clearly, some manipulation was required before this data could be of any use to us.
+My two partners, Max Barry and Stephen Ilhardt and I decided on the modest of goal of figuring out which station had the largest amount of traffic over roughly the period of May 2018. This ended up being a more difficult task than it at first sounded. The trouble was that the columns in the dataset which were labeled 'ENTRIES' and 'EXITS' were cumulative counts over long stretches of time. Some of these values were in the 100's of billions. Clearly, some manipulation was required before this data could be of any use to us.
 
 We ended up finding a quick solution to this problem. Since cumulative values come about through successive addition, taking the difference between consecutive values should undo it. All we had to do was group by the turnstile (represented by the columns 'C/A', 'UNIT', 'SCP', and 'STATION') and apply the .diff() function on a pandas dataframe. The following example also contains three lines that turn negative values into postives (who's every heard of negative foot traffic?) and filters out unreasonably large values.
 
@@ -66,7 +67,7 @@ df["EXIT_COUNTS"] = df.apply(get_exit_counts, axis=1, max_counter=4000)
 
 ```
 
-The moral of this story is that there is often more than one way to accomplish the same thing. I personally find the .diff() example more readable, but there is of course other criteria for code. For example, perhaps the latter block of code is more computationally efficient. So, how do they compare?
+The moral of this story is that there is often more than one way to accomplish the same thing. I personally find the .diff() example more readable, but there is of course other criterion for code. For example, perhaps the latter block of code is more computationally efficient. So, how do they compare?
 
 When I timed the first block, it took 3.59 seconds to complete. The second block took 42.8 seconds to complete. The second example took a good order of magnitude longer to execute. It seems that .diff() is optimized to handle this sort of operation. 
 
