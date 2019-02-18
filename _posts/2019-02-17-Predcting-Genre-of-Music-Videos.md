@@ -7,7 +7,7 @@ Title: Predicting Genre of Music Videos
 
 For my third project at Metis I was required to explore classification techniques. Coming from a background in music, I thought that it may be interesting to see how machine learning can be applied to audio. I was specifically interested in how styles of music could be differentiated from on another. I ultimately decided to build a web app that would take in a YouTube link and spit out a predicted genre along with its associated certainty.
 
-Here's an example of its performance. 
+Here's an example of its performance classifying a selection from the oeuvre of Smash Mouth: All-Star. 
 
 ![Smash Mouth Prediction](images/predictor_app_smashmouth.png)
 
