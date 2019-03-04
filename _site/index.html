@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Max Clarke &middot; Or, How I Learned to Stop Worrying and Start Loving the Data
+    
+  </title>
+
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/public/favicon.ico">
+  <link rel="alternate" type="application/atom+xml" title="Max Clarke" href="/atom.xml">
+    
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+        inlineMath: [['$','$']]
+      }
+    });
+  </script>
+  <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script> 
+
+    
+</head>
+
+
+
+
+  <body>
+
+    <div class="container content">
+      <header class="masthead">
+        <h3 class="masthead-title">
+          <a href="/" title="Home">Max Clarke</a>
+          <small>Or, How I Learned to Stop Worrying and Start Loving the Data:</small><br>
+          
+          &nbsp;&nbsp;&nbsp;
+          <small><a href="/about">About</a></small>
+          
+          &nbsp;&nbsp;&nbsp;
+          <small><a href="/archive">Archive</a></small>
+          
+          &nbsp;&nbsp;&nbsp;
+          <small><a href="/index.html">Feed</a></small>
+          
+        </h3>
+      </header>
+
+      <main>
+      <div class="posts">
+  
+  <article class="post">
+    <h1 class="post-title">
+      <a href="/2019/03/01/Valuing-Basketball-Players/">
+        Valuing Basketball Players
+      </a>
+    </h1>
+
+    <time datetime="2019-03-01T00:00:00-06:00" class="post-date">01 Mar 2019</time>
+
+    <h2 id="introduction">Introduction</h2>
+
+<p>While I was growing up in San Antonio in the 2000’s, the one professional sports franchise in the area, the Spurs, were very good. We had <a href="https://en.wikipedia.org/wiki/Big_Three_(San_Antonio_Spurs)">the trio</a> of Tim Duncan, Tony Parker, and Manu Ginobli, all legendary players in their own right. Between 1999 and 2014, this team brought home 5 championships and were one of the most dominant and consistent teams in American sports. The general discussion of the Spurs’ recent performance was inescapable, especially if it was a year they made it deep into the playoffs. Growing up in this environment, I developed a passing curiosity with basketball and the NBA, but not a deep fandom. So, when I found a large source of easily collectible basketball statistics, and knowing success about previous success in sports analytics, I decided to investigate the data.</p>
+
+<p>My objective was to determine whether a player had performed in manner consistent with their salary. Players are expensive, and accurate appraisal of talent is important in building a strong team. In other words, I wanted to find out which players gave the most bang for your buck.</p>
+
+<p>The plan was to build a model to predict the salaries of basketball players given their performance that year. The difference between my model’s prediction of the salary and their actual salary would be the amount by which they were being overpaid or underpaid. If somebody is being underpaid with regards to their stats, then</p>
+
+<h2 id="data-collection">Data Collection</h2>
+
+<p>The first step in answering this question was to find the right data. I found this in <a href="https://www.basketball-reference.com/">basketball-reference.com</a>, a wonderfully extensive resource containing anything basketball related that can be quantified. I performed web scraping using <a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/">Beautiful Soup</a> to collect all data for all teams (including all players) from 2008 to 2018, including salary information and salary cap information (more on why that’s important later).</p>
+
+<p>Though I scraped as much info as I could from the the website, I only utilized a small selection. I focused on the per 36 minutes played statistics table and the Advanced Statistics table. (maybe include image here) An example of the per 36 minute statistics is Field Goals per 36 Minutes.</p>
+
+<p><img src="images/per36.png" alt="Per 36 Minute Stats" /></p>
+
+<p><img src="images/adv.png" alt="Advanced Stats" /></p>
+
+<p>An example of an advanced statistic is PER or Player Efficiency Rating, which is calculated from a truly monstrous <a href="https://en.wikipedia.org/wiki/Player_efficiency_rating#Calculation">equation</a>. I used the per 36 minute equations because I wanted to normalize the statistics for time on the court. One potential downside of this is that it may overvalue old players who can’t play for long periods of time, but are highly effective when on the court. I also wanted to use the advanced statistics because they represented some pre-engineered features of such high quality that I it would be foolish for me to not take advantage of them.</p>
+
+<h2 id="regularization">Regularization</h2>
+
+<p>One drawback of Ordinary Least Squares is that it can be prone to overfitting, especially when fitting on engineered features and polynomial features. LASSO and Ridge regression are two variants of OLS which are widely used in order to mitigate the problem of overfitting. Since I was working with a lot of features (over 50 in fact), I decided to use LASSO to cut out some of my extraneous feature. Utilizing LASSO (in combination with sklearn’s <code class="highlighter-rouge">GridSearchCV</code> to select the appropriate regulzariztion parameter), I was able to cut myself down to 14 featuress.</p>
+
+<p>The LASSO cost function tends to zero out a few parameters whereas Ridge tends to be more egalitarian in contraining parameter values. I chose to use LASSO over Ridge because my data exhibited a high degree of multicolinearity. In other words, a lot of my features were telling me the same thing. And since more features means more opportunity to fit to noise, cutting out redundant features will help my model generalize better.</p>
+
+<p><img src="images/regularization.png" alt="Regularization Methods" /></p>
+
+<h2 id="results">Results</h2>
+
+<p>Now that I had a model predicted that how much a player was overpaid or underpaid, I identified the most overpaid and underpaid players for every year from 2011 to 2018. I have a detailed these results below:</p>
+
+<h3 id="underpaid-players">Underpaid Players</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Team</th>
+      <th>Year</th>
+      <th>Salary</th>
+      <th>Predicted Salary</th>
+      <th>Predicted Salary Error</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Shaquille O’Neal</td>
+      <td>BOS</td>
+      <td>2011</td>
+      <td>$1,352,000</td>
+      <td>$9,554,000</td>
+      <td>$8,202,000</td>
+    </tr>
+    <tr>
+      <td>Tracy McGrady</td>
+      <td>ATL</td>
+      <td>2012</td>
+      <td>$1,352,000</td>
+      <td>$8,405,000</td>
+      <td>$7,053,000</td>
+    </tr>
+    <tr>
+      <td>Tim Duncan</td>
+      <td>SAS</td>
+      <td>2013</td>
+      <td>$9,638,000</td>
+      <td>$17,077,000</td>
+      <td>$7,438,000</td>
+    </tr>
+    <tr>
+      <td>DeMarcus Cousins</td>
+      <td>SAC</td>
+      <td>2014</td>
+      <td>$4,917,000</td>
+      <td>$12,956,000</td>
+      <td>$8,039,000</td>
+    </tr>
+    <tr>
+      <td>Pau Gasol</td>
+      <td>CHI</td>
+      <td>2015</td>
+      <td>$7,128,000</td>
+      <td>$16,611,000</td>
+      <td>$9,483,000</td>
+    </tr>
+    <tr>
+      <td>Pau Gasol</td>
+      <td>CHI</td>
+      <td>2016</td>
+      <td>$7,449,000</td>
+      <td>$19,362,000</td>
+      <td>$11,913,000</td>
+    </tr>
+    <tr>
+      <td>Giannis Antetokounmpo</td>
+      <td>MIL</td>
+      <td>2017</td>
+      <td>$2,995,000</td>
+      <td>$20,495,000</td>
+      <td>$17,500,000</td>
+    </tr>
+    <tr>
+      <td>Dwyane Wade</td>
+      <td>MIA</td>
+      <td>2018</td>
+      <td>$1,471,000</td>
+      <td>$17,827,000</td>
+      <td>$16,356,000</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="overpaid-players">Overpaid Players</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Team</th>
+      <th>Year</th>
+      <th>Salary</th>
+      <th>Predicted Salary</th>
+      <th>Predicted Salary Error</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rashard Lewis</td>
+      <td>WAS</td>
+      <td>2011</td>
+      <td>$19,574,000</td>
+      <td>$5,578,000</td>
+      <td>-$13,996,000</td>
+    </tr>
+    <tr>
+      <td>Rashard Lewis</td>
+      <td>WAS</td>
+      <td>2012</td>
+      <td>$21,137,000</td>
+      <td>$5,537,000</td>
+      <td>-$15,600,000</td>
+    </tr>
+    <tr>
+      <td>Amar’e Stoudemire</td>
+      <td>NYK</td>
+      <td>2013</td>
+      <td>$19,949,000</td>
+      <td>$6,814,000</td>
+      <td>-$13,135,000</td>
+    </tr>
+    <tr>
+      <td>Amar’e Stoudemire</td>
+      <td>NYK</td>
+      <td>2014</td>
+      <td>$21,680,000</td>
+      <td>$6,537,000</td>
+      <td>-$15,143,000</td>
+    </tr>
+    <tr>
+      <td>Amar’e Stoudemire</td>
+      <td>NYK</td>
+      <td>2015</td>
+      <td>$23,411,000</td>
+      <td>$8,337,000</td>
+      <td>-$15,074,000</td>
+    </tr>
+    <tr>
+      <td>Joe Johnson</td>
+      <td>BRK</td>
+      <td>2016</td>
+      <td>$24,894,900</td>
+      <td>$9,114,000</td>
+      <td>-$15,781,000</td>
+    </tr>
+    <tr>
+      <td>Chandler Parsons</td>
+      <td>MEM</td>
+      <td>2017</td>
+      <td>$22,117,000</td>
+      <td>$5,922,000</td>
+      <td>-$16,195,000</td>
+    </tr>
+    <tr>
+      <td>Mike Conley</td>
+      <td>MEM</td>
+      <td>2018</td>
+      <td>$28,530,000</td>
+      <td>$11,148,000</td>
+      <td>-$17,383,000</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>So, there you have it, the most underpaid and overpaid players between 2011 and 2018 in the NBA. I have similar information for every player in my dataset, but these were just the largest outliers and the most interesting examples.</p>
+
+<p>While I do think these results are pretty decent, I want to stress some limitations of this model. First, I want to take a look at this residual plot.</p>
+
+<p><img src="images/residuals.png" alt="residuals" /></p>
+
+<p>A few notes:</p>
+
+<ul>
+  <li>I’m predicting a few negative values. This may be worrisome, or it could be interpretted as players who are so bad that you should be willing to give up money in order to get them off your time. For instance, if there is a cost involved in a breaking a contract early, it still may be worth it to get them off your team.</li>
+  <li>We’d ideally wish to have the slope of this line be about 1, but here it looks like it’s a little over <script type="math/tex">\frac{1}{2}</script>. This means that our model tends to underpredicct the salary of players. For instance, some players command a full 40% of the salary cap, but my model doesn’t predict anything above about 30% of the cap.</li>
+</ul>
+
+<p>So, that’s all I have for this project. I’ll link to the code soon and possibly update this with further thoughts on this project. I may try to extend this out to more years if I think it’s worthwhile. Thanks for reading!</p>
+
+  </article>
+  
+  <article class="post">
+    <h1 class="post-title">
+      <a href="/2019/02/17/Predcting-Genre-of-Music-Videos/">
+        Predcting Genre Of Music Videos
+      </a>
+    </h1>
+
+    <time datetime="2019-02-17T00:00:00-06:00" class="post-date">17 Feb 2019</time>
+
+    <h2 id="introduction">Introduction</h2>
+
+<p>For my third project at Metis I was required to explore classification techniques. Coming from a background in music, I thought that it may be interesting to see how machine learning can be applied to audio. I was specifically interested in how styles of music could be differentiated from on another. I ultimately decided to build a web app that would take in a YouTube link and spit out a predicted genre along with its associated certainty.</p>
+
+<p>Here’s an example of its performance.</p>
+
+<p><img src="images/predictor_app_smashmouth.png" alt="Smash Mouth Prediction" /></p>
+
+<h2 id="the-free-music-archive">The Free Music Archive</h2>
+
+<p>I found an excellent resource to help me in this endeavor: https://github.com/mdeff/fma. This repository contains code that constructs a database extracted features from audio files collected from <a href="http://freemusicarchive.org">The Free Music Arhive</a>. The Free Music Archive is a website where amateur and professional musicians can upload their work under a creative commons license. A consequence of this open liscensing is that researches can be confident that using these tracks for research purposes and releaseing the results does not run afould of copyright law.</p>
+
+<p>The database contains information about over 100,000 tracks spanning many dozens of genres. I decided to only focus on 5 genres: Rock, Hip-Hop, Folk, Electronic, and Classical. I excluded genres such as Experimental and Pop because I believed these to be less well defined. I also excluded genres that were not very well represented in the FMA database, such as Bebop or Bluegrass.</p>
+
+<p>This work was all performed by the researchers: Michaël Defferrard, Kirell Benzi, Pierre Vandergheynst, and Xavier Bresson. The stated purpose of the database is to serve as a benchmark dataset for genre recognition in a similar way that MNIST is the benchmark for digit classification. An explanation of their fantastic project can be found in their <a href="https://arxiv.org/abs/1612.01840">arXiv paper</a>.</p>
+
+<h2 id="mir-and-feature-retrieval">MIR and Feature Retrieval</h2>
+
+<p>In an effort to comprehend the work that went into constructing this dataset, I ended up diving into the deep-end of the field called Music Information Retrieval. Significant preprocessing is necessary to prepare an audio file for a machine learning algorithm. Many techniques have been developed for the purpose of  extracting features from audio. I wish to breifly touch upon a few of these techniques.</p>
+
+<p>One of the most popular techniques is the Fourier Transform. Essentially, the Fourier Transform extracts the pitches in a song from the raw audio. It takes a function that describes a wave (e.g. pressure vs time, a sound wave), and translates this to a amplitude vs frequency space. This allows us to look at the frequencies that make up a song  (and their relative prevalence) specifically. We can further look at the Short-time Fourier transform, which is performed by cutting the audio signal into small segments, usually on the order of a second or less, and performing a Fourier transform on each segment. In this manner, a spectrogram can be produced. Once we have the spectrogram, some interesting features can be derived, such as the Mel-frequency Cepstrum Coefficients or the Chromagram STFT.</p>
+
+<p>An additional features that can be extracted is the zero crossing rate, that is the rate at which the amplitude passes from positive to negative. The zero crossing rate can be considered an estimate for the fundamental frequency of a sound-wave. Intuitively, we can approximate the fundamental frequency as a sinusoid having a fequency equalling that of the zero-crossing rate. This zero-crossing rate can vary across time, representing a changing fundamental frequency, an approximation of which can be obtained by taking the zero-crossing rate for small segments, similar to the Short-time Fourier Transform.</p>
+
+<p>There are many more potential features to be extracted from the audio file (including, but not limited to) <a href="https://en.wikipedia.org/wiki/Tonnetz">tonnetz features</a> and <a href="https://musicinformationretrieval.com/energy.html">Root Mean Squared Energy</a>.</p>
+
+<h2 id="the-flask-app">The Flask App</h2>
+
+<p>As an application for my model, I decided to build a flask app that can tell what genre a music video is. I utilized the <a href="https://github.com/nficano/pytube">pytube library</a> to download youtube videos. I then used the <a href="https://librosa.github.io/">LibROSA library</a> to extract the features from the song. I trained a model on the Free Music Archive dataset using logistic regression with a one-versus-rest technique to determine the genre of the song. The accuracy of this practice is 80% within the dataset, but I would be interested in doing some tests on how it performs on YouTube specifically.</p>
+
+<p>I plan on updating this blog post with a link to the web-app when I host it, so stay tuned for that. You can see a screenshot of the app in action at the top of this post.</p>
+
+
+  </article>
+  
+</div>
+
+<div class="pagination">
+  
+    <a class="pagination-item older" href="/page2">Older</a>
+  
+  
+    <span class="pagination-item newer">Newer</span>
+  
+</div>
+
+      </main>
+
+      <footer class="footer">
+        <small>
+          &copy; <time datetime="2019-03-04T16:29:59-06:00">2019</time>. All rights reserved.
+        </small>
+      </footer>
+    </div>
+
+    
+  </body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      A Couple Of Adventures With The Mta Turnstile Dataset &middot; Max Clarke
+    
+  </title>
+
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-precomposed.png">
+  <link rel="shortcut icon" href="/public/favicon.ico">
+  <link rel="alternate" type="application/atom+xml" title="Max Clarke" href="/atom.xml">
+    
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+        inlineMath: [['$','$']]
+      }
+    });
+  </script>
+  <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script> 
+
+    
+</head>
+
+
+
+
+  <body>
+
+    <div class="container content">
+      <header class="masthead">
+        <h3 class="masthead-title">
+          <a href="/" title="Home">Max Clarke</a>
+          <small>Or, How I Learned to Stop Worrying and Start Loving the Data:</small><br>
+          
+          &nbsp;&nbsp;&nbsp;
+          <small><a href="/about">About</a></small>
+          
+          &nbsp;&nbsp;&nbsp;
+          <small><a href="/archive">Archive</a></small>
+          
+          &nbsp;&nbsp;&nbsp;
+          <small><a href="/index.html">Feed</a></small>
+          
+        </h3>
+      </header>
+
+      <main>
+      <article class="post">
+  <h1 class="post-title">A Couple Of Adventures With The Mta Turnstile Dataset</h1>
+  <time datetime="2019-01-12T00:00:00-06:00" class="post-date">12 Jan 2019</time>
+  <h1 id="introduction">Introduction</h1>
+
+<p>When I started my first week at Metis Data Science Bootcamp, I learned about the first project I would have to complete: exploratory data analysis (EDA) on the <a href="http://web.mta.info/developers/turnstile.html">MTA Turnstile
+dataset</a>. The point of the project was to advise a fictitious non-profit on the best stations and times to place their street teams advertising their summer gala, their main fundraiser. I learned a lot about EDA, and I’d like to share a few interesting things I learned along the way. I won’t go into the results of that analysis. Rather, this post is about a couple of tangents which caught my attention.</p>
+
+<p>This post is split into two parts: an examination of the .diff() method in pandas, and a cursory exploration of whether the distribution of ridership among the subway stations of the MTA follow an Pareto distribution, or more generally a power law. To perform the data analysis, we used python and jupyter notebooks, with an emphasis on the pandas and matplotlib libraries.</p>
+
+<h2 id="using-the-diff-method">Using the .diff() method</h2>
+
+<p>My two partners, Max Barry and Stephen Ilhardt and I decided on the modest of goal of figuring out which station had the largest amount of traffic over roughly the period of May 2018. This ended up being a more difficult task than it at first sounded. The trouble was that the columns in the dataset which were labeled ‘ENTRIES’ and ‘EXITS’ were cumulative counts over long stretches of time. Some of these values were in the 100’s of billions. Clearly, some manipulation was required before this data could be of any use to us.</p>
+
+<p>We ended up finding a quick solution to this problem. Since cumulative values come about through successive addition, taking the difference between consecutive values should undo it. All we had to do was group by the turnstile (represented by the columns ‘C/A’, ‘UNIT’, ‘SCP’, and ‘STATION’) and apply the .diff() function on a pandas dataframe. The following example also contains three lines that turn negative values into postives (who’s every heard of negative foot traffic?) and filters out unreasonably large values.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">turnstile</span> <span class="o">=</span> <span class="p">[</span><span class="s">"C/A"</span><span class="p">,</span> <span class="s">"UNIT"</span><span class="p">,</span> <span class="s">"SCP"</span><span class="p">,</span> <span class="s">"STATION"</span><span class="p">]</span>
+
+<span class="c"># Makes sure the index is the naturals. Necessary for diff() to work</span>
+<span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">turnstile</span> <span class="o">+</span> <span class="p">[</span><span class="s">'DATE'</span><span class="p">,</span> <span class="s">'WEEKDAY'</span><span class="p">,</span> <span class="s">'TIME'</span><span class="p">])</span> 
+
+<span class="n">df</span><span class="p">[[</span><span class="s">'TOTAL_ENTRIES'</span><span class="p">,</span> <span class="s">'TOTAL_EXITS'</span><span class="p">]]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">turnstile</span><span class="p">)[[</span><span class="s">'ENTRIES'</span><span class="p">,</span> <span class="s">'EXITS'</span><span class="p">]]</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span>
+
+<span class="c"># make negative values positive</span>
+<span class="n">df</span><span class="p">[[</span><span class="s">'TOTAL_ENTRIES'</span><span class="p">,</span> <span class="s">'TOTAL_EXITS'</span><span class="p">]]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s">'TOTAL_ENTRIES'</span><span class="p">,</span> <span class="s">'TOTAL_EXITS'</span><span class="p">]]</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="nb">abs</span><span class="p">)</span>
+
+<span class="c"># filtering out values larger than 4000</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'TOTAL_ENTRIES'</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">4000</span><span class="p">]</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'TOTAL_EXITS'</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">4000</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>This accomplishes what we were trying to achieve very quickly. Contrast with this more long winded strategy:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">turnstile</span> <span class="o">=</span> <span class="p">[</span><span class="s">"C/A"</span><span class="p">,</span> <span class="s">"UNIT"</span><span class="p">,</span> <span class="s">"SCP"</span><span class="p">,</span> <span class="s">"STATION"</span><span class="p">]</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">turnstile</span> <span class="o">+</span> <span class="p">[</span><span class="s">'DATE'</span><span class="p">,</span> <span class="s">'WEEKDAY'</span><span class="p">,</span> <span class="s">'TIME'</span><span class="p">])</span> 
+<span class="n">df</span><span class="p">[[</span><span class="s">'PREV_TIME'</span><span class="p">,</span><span class="s">'PREV_ENTRIES'</span><span class="p">,</span><span class="s">'PREV_EXITS'</span><span class="p">]]</span> <span class="o">=</span> \
+                            <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">turnstile</span><span class="p">)[</span><span class="s">'TIME'</span><span class="p">,</span><span class="s">'ENTRIES'</span><span class="p">,</span><span class="s">'EXITS'</span><span class="p">]</span>\
+                            <span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+
+<span class="k">def</span> <span class="nf">get_entry_counts</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">max_counter</span><span class="p">):</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s">"ENTRIES"</span><span class="p">]</span> <span class="o">-</span> <span class="n">row</span><span class="p">[</span><span class="s">"PREV_ENTRIES"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="o">-</span><span class="n">counter</span>
+    <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;</span> <span class="n">max_counter</span><span class="p">:</span> 
+        <span class="k">return</span> <span class="mi">0</span> 
+    <span class="k">return</span> <span class="n">counter</span>
+
+<span class="k">def</span> <span class="nf">get_exit_counts</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">max_counter</span><span class="p">):</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s">"EXITS"</span><span class="p">]</span> <span class="o">-</span> <span class="n">row</span><span class="p">[</span><span class="s">"PREV_EXITS"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="o">-</span><span class="n">counter</span>
+    <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;</span> <span class="n">max_counter</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">counter</span>
+
+<span class="c"># cut off any entries and exits that were greater than 4000</span>
+<span class="c"># took difference between consecutive counts</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">"ENTRY_COUNTS"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">get_entry_counts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_counter</span><span class="o">=</span><span class="mi">4000</span><span class="p">)</span> 
+<span class="n">df</span><span class="p">[</span><span class="s">"EXIT_COUNTS"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">get_exit_counts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_counter</span><span class="o">=</span><span class="mi">4000</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>The moral of this story is that there is often more than one way to accomplish the same thing. I personally find the .diff() example more readable, but there is of course other criterion for code. For example, perhaps the latter block of code is more computationally efficient. So, how do they compare?</p>
+
+<p>When I timed the first block, it took 3.59 seconds to complete. The second block took 42.8 seconds to complete. The second example took a good order of magnitude longer to execute. It seems that .diff() is optimized to handle this sort of operation.</p>
+
+<h2 id="but-is-it-a-pareto-distribution">But is it a Pareto Distribution?</h2>
+
+<p>After the project was completed, I decided to go down a rabbit hole. I’ve heard in the past that many phenomena in nature happen to follow a Pareto distribution (e.g., wealth distribution and the population distribution between human settlements). When I looked at a graph of the most trafficked stations ordered by popularity, it seemed to follow a similar pattern. The below graph shows the total foot traffic for roughly the month of May.</p>
+
+<p><img src="images/Pareto.svg" alt="Stations by Total Foot Traffic" /></p>
+
+<h3 id="the-pareto-distribution">The Pareto Distribution</h3>
+
+<p>The Pareto Distribution is a probability distribution which is notable for its description of many natural phenomena, as well as its inability to be adequately described by common summary statistics such as mean and standard deviation.</p>
+
+<p><img src="/images/Probability_density_function_of_Pareto_distribution.svg.png" alt="Pareto Distribution" /></p>
+
+<p>As can be seen from the above image, it is a power law distribution. For that reason, I will end up attempting to fit a general power distribution to the</p>
+
+<h3 id="the-20-80-principle">The 20-80 Principle</h3>
+
+<p>“The <a href="https://en.wikipedia.org/wiki/Pareto_principle">Pareto principle</a> states that, for many events, roughly 80% of the effects come from 20% of the causes.” - Wikipedia</p>
+
+<p>I did a calculation of the top 20% of stations by total foot traffic. They accounted for 60% of the traffic. This is one mark against following a classic Pareto distribution, though it should be noted that the 20-80 rule is not a hard and fast determination of whether something is a Pareto distribution. The distribution has parameters that can change; and when they change, the level of inequality grows.</p>
+
+<p>The application of this finding to our imaginary client would of course be that focusing only the most popular stations would be sufficient to reach most of the ridership of the MTA. Of course, my client wouldn’t care if this data <em>really</em> follows a Pareto distribution, but, for some reason, I did.</p>
+
+<h3 id="attempting-a-fit">Attempting a Fit</h3>
+
+<p>So, here’s what I came up with:</p>
+
+<p><img src="images/fit_first_attempt.svg" alt="First Attempt" /></p>
+
+<p>As you can probably see, this is not a very good fit. It quickly dips way below the observed data, before going way over it, and then permanently dipping below it again and even into the negatives. This is basically a disaster.</p>
+
+<p>After doing a little bit of research, I learned that the tails of power-law distributions in general tend to deviate away from the distribution. I cut off both the highest values as well as the lowest values to see if the middle section fit any better.</p>
+
+<p><img src="images/fit_second_attempt.svg" alt="Second Attempt" /></p>
+
+<p>This definitely still shows that same behavior as before (i.e., under –&gt; over –&gt; under), but this deviation appears to be much less severe than in the first fit. This is actually quite promising.</p>
+
+<h3 id="conclusion">Conclusion?</h3>
+
+<p>I didn’t have time to do rigorous analysis on this data. In my research, I find an interesting <a href="https://arxiv.org/pdf/0706.1062.pdf">article</a> available on arXiv.org arguing that the occurrence of power-laws in empirical data have been vastly over-stated. One thing I would like to do in the future is apply the <a href="https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test">Kolmogorov-Smirnov test</a> on this data as outlined in the arXiv article to come to a more conclusive result. They even have some <a href="http://tuvalu.santafe.edu/~aaronc/powerlaws/">code</a> up that looks interesting!</p>
+
+<p>In conclusion, I don’t have too much of a conclusion. I’m pretty confident in saying that the full empirical distribution as observed is not obeying a power law. But, the middle section seems like it could be more promising. If I had spent more time trying to find the right initial estimates for a fit, then maybe an even nicer fit would have popped up. Regardless, a take-away for me is to be more skeptical that a pure power-law or Pareto distribution is in front of me just because of some superficial similarities.</p>
+
+
+</article>
+
+
+<aside class="related">
+  <h3>Related posts</h3>
+  <ul class="related-posts">
+    
+      <li>
+        <a href="/2019/03/01/Valuing-Basketball-Players/">
+          Valuing Basketball Players
+          <small><time datetime="2019-03-01T00:00:00-06:00">01 Mar 2019</time></small>
+        </a>
+      </li>
+    
+      <li>
+        <a href="/2019/02/17/Predcting-Genre-of-Music-Videos/">
+          Predcting Genre Of Music Videos
+          <small><time datetime="2019-02-17T00:00:00-06:00">17 Feb 2019</time></small>
+        </a>
+      </li>
+    
+  </ul>
+</aside>
+
+
+      </main>
+
+      <footer class="footer">
+        <small>
+          &copy; <time datetime="2019-03-04T16:29:59-06:00">2019</time>. All rights reserved.
+        </small>
+      </footer>
+    </div>
+
+    
+  </body>
+</html>

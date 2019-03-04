@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+ <title>Max Clarke</title>
+ <link href="http://localhost:4000/atom.xml" rel="self"/>
+ <link href="http://localhost:4000/"/>
+ <updated>2019-03-04T16:29:59-06:00</updated>
+ <id>http://localhost:4000</id>
+ <author>
+   <name>Max Clarke</name>
+   <email>jmclarke51@gmail.com</email>
+ </author>
+
+ 
+ <entry>
+   <title>Valuing Basketball Players</title>
+   <link href="http://localhost:4000/2019/03/01/Valuing-Basketball-Players/"/>
+   <updated>2019-03-01T00:00:00-06:00</updated>
+   <id>http://localhost:4000/2019/03/01/Valuing-Basketball-Players</id>
+   <content type="html">&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;While I was growing up in San Antonio in the 2000’s, the one professional sports franchise in the area, the Spurs, were very good. We had &lt;a href=&quot;https://en.wikipedia.org/wiki/Big_Three_(San_Antonio_Spurs)&quot;&gt;the trio&lt;/a&gt; of Tim Duncan, Tony Parker, and Manu Ginobli, all legendary players in their own right. Between 1999 and 2014, this team brought home 5 championships and were one of the most dominant and consistent teams in American sports. The general discussion of the Spurs’ recent performance was inescapable, especially if it was a year they made it deep into the playoffs. Growing up in this environment, I developed a passing curiosity with basketball and the NBA, but not a deep fandom. So, when I found a large source of easily collectible basketball statistics, and knowing success about previous success in sports analytics, I decided to investigate the data.&lt;/p&gt;
+
+&lt;p&gt;My objective was to determine whether a player had performed in manner consistent with their salary. Players are expensive, and accurate appraisal of talent is important in building a strong team. In other words, I wanted to find out which players gave the most bang for your buck.&lt;/p&gt;
+
+&lt;p&gt;The plan was to build a model to predict the salaries of basketball players given their performance that year. The difference between my model’s prediction of the salary and their actual salary would be the amount by which they were being overpaid or underpaid. If somebody is being underpaid with regards to their stats, then&lt;/p&gt;
+
+&lt;h2 id=&quot;data-collection&quot;&gt;Data Collection&lt;/h2&gt;
+
+&lt;p&gt;The first step in answering this question was to find the right data. I found this in &lt;a href=&quot;https://www.basketball-reference.com/&quot;&gt;basketball-reference.com&lt;/a&gt;, a wonderfully extensive resource containing anything basketball related that can be quantified. I performed web scraping using &lt;a href=&quot;https://www.crummy.com/software/BeautifulSoup/bs4/doc/&quot;&gt;Beautiful Soup&lt;/a&gt; to collect all data for all teams (including all players) from 2008 to 2018, including salary information and salary cap information (more on why that’s important later).&lt;/p&gt;
+
+&lt;p&gt;Though I scraped as much info as I could from the the website, I only utilized a small selection. I focused on the per 36 minutes played statistics table and the Advanced Statistics table. (maybe include image here) An example of the per 36 minute statistics is Field Goals per 36 Minutes.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/per36.png&quot; alt=&quot;Per 36 Minute Stats&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/adv.png&quot; alt=&quot;Advanced Stats&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;An example of an advanced statistic is PER or Player Efficiency Rating, which is calculated from a truly monstrous &lt;a href=&quot;https://en.wikipedia.org/wiki/Player_efficiency_rating#Calculation&quot;&gt;equation&lt;/a&gt;. I used the per 36 minute equations because I wanted to normalize the statistics for time on the court. One potential downside of this is that it may overvalue old players who can’t play for long periods of time, but are highly effective when on the court. I also wanted to use the advanced statistics because they represented some pre-engineered features of such high quality that I it would be foolish for me to not take advantage of them.&lt;/p&gt;
+
+&lt;h2 id=&quot;regularization&quot;&gt;Regularization&lt;/h2&gt;
+
+&lt;p&gt;One drawback of Ordinary Least Squares is that it can be prone to overfitting, especially when fitting on engineered features and polynomial features. LASSO and Ridge regression are two variants of OLS which are widely used in order to mitigate the problem of overfitting. Since I was working with a lot of features (over 50 in fact), I decided to use LASSO to cut out some of my extraneous feature. Utilizing LASSO (in combination with sklearn’s &lt;code class=&quot;highlighter-rouge&quot;&gt;GridSearchCV&lt;/code&gt; to select the appropriate regulzariztion parameter), I was able to cut myself down to 14 featuress.&lt;/p&gt;
+
+&lt;p&gt;The LASSO cost function tends to zero out a few parameters whereas Ridge tends to be more egalitarian in contraining parameter values. I chose to use LASSO over Ridge because my data exhibited a high degree of multicolinearity. In other words, a lot of my features were telling me the same thing. And since more features means more opportunity to fit to noise, cutting out redundant features will help my model generalize better.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/regularization.png&quot; alt=&quot;Regularization Methods&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;results&quot;&gt;Results&lt;/h2&gt;
+
+&lt;p&gt;Now that I had a model predicted that how much a player was overpaid or underpaid, I identified the most overpaid and underpaid players for every year from 2011 to 2018. I have a detailed these results below:&lt;/p&gt;
+
+&lt;h3 id=&quot;underpaid-players&quot;&gt;Underpaid Players&lt;/h3&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Team&lt;/th&gt;
+      &lt;th&gt;Year&lt;/th&gt;
+      &lt;th&gt;Salary&lt;/th&gt;
+      &lt;th&gt;Predicted Salary&lt;/th&gt;
+      &lt;th&gt;Predicted Salary Error&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Shaquille O’Neal&lt;/td&gt;
+      &lt;td&gt;BOS&lt;/td&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;$1,352,000&lt;/td&gt;
+      &lt;td&gt;$9,554,000&lt;/td&gt;
+      &lt;td&gt;$8,202,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Tracy McGrady&lt;/td&gt;
+      &lt;td&gt;ATL&lt;/td&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;$1,352,000&lt;/td&gt;
+      &lt;td&gt;$8,405,000&lt;/td&gt;
+      &lt;td&gt;$7,053,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Tim Duncan&lt;/td&gt;
+      &lt;td&gt;SAS&lt;/td&gt;
+      &lt;td&gt;2013&lt;/td&gt;
+      &lt;td&gt;$9,638,000&lt;/td&gt;
+      &lt;td&gt;$17,077,000&lt;/td&gt;
+      &lt;td&gt;$7,438,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;DeMarcus Cousins&lt;/td&gt;
+      &lt;td&gt;SAC&lt;/td&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;$4,917,000&lt;/td&gt;
+      &lt;td&gt;$12,956,000&lt;/td&gt;
+      &lt;td&gt;$8,039,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Pau Gasol&lt;/td&gt;
+      &lt;td&gt;CHI&lt;/td&gt;
+      &lt;td&gt;2015&lt;/td&gt;
+      &lt;td&gt;$7,128,000&lt;/td&gt;
+      &lt;td&gt;$16,611,000&lt;/td&gt;
+      &lt;td&gt;$9,483,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Pau Gasol&lt;/td&gt;
+      &lt;td&gt;CHI&lt;/td&gt;
+      &lt;td&gt;2016&lt;/td&gt;
+      &lt;td&gt;$7,449,000&lt;/td&gt;
+      &lt;td&gt;$19,362,000&lt;/td&gt;
+      &lt;td&gt;$11,913,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Giannis Antetokounmpo&lt;/td&gt;
+      &lt;td&gt;MIL&lt;/td&gt;
+      &lt;td&gt;2017&lt;/td&gt;
+      &lt;td&gt;$2,995,000&lt;/td&gt;
+      &lt;td&gt;$20,495,000&lt;/td&gt;
+      &lt;td&gt;$17,500,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Dwyane Wade&lt;/td&gt;
+      &lt;td&gt;MIA&lt;/td&gt;
+      &lt;td&gt;2018&lt;/td&gt;
+      &lt;td&gt;$1,471,000&lt;/td&gt;
+      &lt;td&gt;$17,827,000&lt;/td&gt;
+      &lt;td&gt;$16,356,000&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&quot;overpaid-players&quot;&gt;Overpaid Players&lt;/h3&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Team&lt;/th&gt;
+      &lt;th&gt;Year&lt;/th&gt;
+      &lt;th&gt;Salary&lt;/th&gt;
+      &lt;th&gt;Predicted Salary&lt;/th&gt;
+      &lt;th&gt;Predicted Salary Error&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Rashard Lewis&lt;/td&gt;
+      &lt;td&gt;WAS&lt;/td&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;$19,574,000&lt;/td&gt;
+      &lt;td&gt;$5,578,000&lt;/td&gt;
+      &lt;td&gt;-$13,996,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Rashard Lewis&lt;/td&gt;
+      &lt;td&gt;WAS&lt;/td&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;$21,137,000&lt;/td&gt;
+      &lt;td&gt;$5,537,000&lt;/td&gt;
+      &lt;td&gt;-$15,600,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Amar’e Stoudemire&lt;/td&gt;
+      &lt;td&gt;NYK&lt;/td&gt;
+      &lt;td&gt;2013&lt;/td&gt;
+      &lt;td&gt;$19,949,000&lt;/td&gt;
+      &lt;td&gt;$6,814,000&lt;/td&gt;
+      &lt;td&gt;-$13,135,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Amar’e Stoudemire&lt;/td&gt;
+      &lt;td&gt;NYK&lt;/td&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;$21,680,000&lt;/td&gt;
+      &lt;td&gt;$6,537,000&lt;/td&gt;
+      &lt;td&gt;-$15,143,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Amar’e Stoudemire&lt;/td&gt;
+      &lt;td&gt;NYK&lt;/td&gt;
+      &lt;td&gt;2015&lt;/td&gt;
+      &lt;td&gt;$23,411,000&lt;/td&gt;
+      &lt;td&gt;$8,337,000&lt;/td&gt;
+      &lt;td&gt;-$15,074,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Joe Johnson&lt;/td&gt;
+      &lt;td&gt;BRK&lt;/td&gt;
+      &lt;td&gt;2016&lt;/td&gt;
+      &lt;td&gt;$24,894,900&lt;/td&gt;
+      &lt;td&gt;$9,114,000&lt;/td&gt;
+      &lt;td&gt;-$15,781,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Chandler Parsons&lt;/td&gt;
+      &lt;td&gt;MEM&lt;/td&gt;
+      &lt;td&gt;2017&lt;/td&gt;
+      &lt;td&gt;$22,117,000&lt;/td&gt;
+      &lt;td&gt;$5,922,000&lt;/td&gt;
+      &lt;td&gt;-$16,195,000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Mike Conley&lt;/td&gt;
+      &lt;td&gt;MEM&lt;/td&gt;
+      &lt;td&gt;2018&lt;/td&gt;
+      &lt;td&gt;$28,530,000&lt;/td&gt;
+      &lt;td&gt;$11,148,000&lt;/td&gt;
+      &lt;td&gt;-$17,383,000&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;So, there you have it, the most underpaid and overpaid players between 2011 and 2018 in the NBA. I have similar information for every player in my dataset, but these were just the largest outliers and the most interesting examples.&lt;/p&gt;
+
+&lt;p&gt;While I do think these results are pretty decent, I want to stress some limitations of this model. First, I want to take a look at this residual plot.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/residuals.png&quot; alt=&quot;residuals&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A few notes:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;I’m predicting a few negative values. This may be worrisome, or it could be interpretted as players who are so bad that you should be willing to give up money in order to get them off your time. For instance, if there is a cost involved in a breaking a contract early, it still may be worth it to get them off your team.&lt;/li&gt;
+  &lt;li&gt;We’d ideally wish to have the slope of this line be about 1, but here it looks like it’s a little over &lt;script type=&quot;math/tex&quot;&gt;\frac{1}{2}&lt;/script&gt;. This means that our model tends to underpredicct the salary of players. For instance, some players command a full 40% of the salary cap, but my model doesn’t predict anything above about 30% of the cap.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;So, that’s all I have for this project. I’ll link to the code soon and possibly update this with further thoughts on this project. I may try to extend this out to more years if I think it’s worthwhile. Thanks for reading!&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Predcting Genre Of Music Videos</title>
+   <link href="http://localhost:4000/2019/02/17/Predcting-Genre-of-Music-Videos/"/>
+   <updated>2019-02-17T00:00:00-06:00</updated>
+   <id>http://localhost:4000/2019/02/17/Predcting-Genre-of-Music-Videos</id>
+   <content type="html">&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;For my third project at Metis I was required to explore classification techniques. Coming from a background in music, I thought that it may be interesting to see how machine learning can be applied to audio. I was specifically interested in how styles of music could be differentiated from on another. I ultimately decided to build a web app that would take in a YouTube link and spit out a predicted genre along with its associated certainty.&lt;/p&gt;
+
+&lt;p&gt;Here’s an example of its performance.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/predictor_app_smashmouth.png&quot; alt=&quot;Smash Mouth Prediction&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;the-free-music-archive&quot;&gt;The Free Music Archive&lt;/h2&gt;
+
+&lt;p&gt;I found an excellent resource to help me in this endeavor: https://github.com/mdeff/fma. This repository contains code that constructs a database extracted features from audio files collected from &lt;a href=&quot;http://freemusicarchive.org&quot;&gt;The Free Music Arhive&lt;/a&gt;. The Free Music Archive is a website where amateur and professional musicians can upload their work under a creative commons license. A consequence of this open liscensing is that researches can be confident that using these tracks for research purposes and releaseing the results does not run afould of copyright law.&lt;/p&gt;
+
+&lt;p&gt;The database contains information about over 100,000 tracks spanning many dozens of genres. I decided to only focus on 5 genres: Rock, Hip-Hop, Folk, Electronic, and Classical. I excluded genres such as Experimental and Pop because I believed these to be less well defined. I also excluded genres that were not very well represented in the FMA database, such as Bebop or Bluegrass.&lt;/p&gt;
+
+&lt;p&gt;This work was all performed by the researchers: Michaël Defferrard, Kirell Benzi, Pierre Vandergheynst, and Xavier Bresson. The stated purpose of the database is to serve as a benchmark dataset for genre recognition in a similar way that MNIST is the benchmark for digit classification. An explanation of their fantastic project can be found in their &lt;a href=&quot;https://arxiv.org/abs/1612.01840&quot;&gt;arXiv paper&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;mir-and-feature-retrieval&quot;&gt;MIR and Feature Retrieval&lt;/h2&gt;
+
+&lt;p&gt;In an effort to comprehend the work that went into constructing this dataset, I ended up diving into the deep-end of the field called Music Information Retrieval. Significant preprocessing is necessary to prepare an audio file for a machine learning algorithm. Many techniques have been developed for the purpose of  extracting features from audio. I wish to breifly touch upon a few of these techniques.&lt;/p&gt;
+
+&lt;p&gt;One of the most popular techniques is the Fourier Transform. Essentially, the Fourier Transform extracts the pitches in a song from the raw audio. It takes a function that describes a wave (e.g. pressure vs time, a sound wave), and translates this to a amplitude vs frequency space. This allows us to look at the frequencies that make up a song  (and their relative prevalence) specifically. We can further look at the Short-time Fourier transform, which is performed by cutting the audio signal into small segments, usually on the order of a second or less, and performing a Fourier transform on each segment. In this manner, a spectrogram can be produced. Once we have the spectrogram, some interesting features can be derived, such as the Mel-frequency Cepstrum Coefficients or the Chromagram STFT.&lt;/p&gt;
+
+&lt;p&gt;An additional features that can be extracted is the zero crossing rate, that is the rate at which the amplitude passes from positive to negative. The zero crossing rate can be considered an estimate for the fundamental frequency of a sound-wave. Intuitively, we can approximate the fundamental frequency as a sinusoid having a fequency equalling that of the zero-crossing rate. This zero-crossing rate can vary across time, representing a changing fundamental frequency, an approximation of which can be obtained by taking the zero-crossing rate for small segments, similar to the Short-time Fourier Transform.&lt;/p&gt;
+
+&lt;p&gt;There are many more potential features to be extracted from the audio file (including, but not limited to) &lt;a href=&quot;https://en.wikipedia.org/wiki/Tonnetz&quot;&gt;tonnetz features&lt;/a&gt; and &lt;a href=&quot;https://musicinformationretrieval.com/energy.html&quot;&gt;Root Mean Squared Energy&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-flask-app&quot;&gt;The Flask App&lt;/h2&gt;
+
+&lt;p&gt;As an application for my model, I decided to build a flask app that can tell what genre a music video is. I utilized the &lt;a href=&quot;https://github.com/nficano/pytube&quot;&gt;pytube library&lt;/a&gt; to download youtube videos. I then used the &lt;a href=&quot;https://librosa.github.io/&quot;&gt;LibROSA library&lt;/a&gt; to extract the features from the song. I trained a model on the Free Music Archive dataset using logistic regression with a one-versus-rest technique to determine the genre of the song. The accuracy of this practice is 80% within the dataset, but I would be interested in doing some tests on how it performs on YouTube specifically.&lt;/p&gt;
+
+&lt;p&gt;I plan on updating this blog post with a link to the web-app when I host it, so stay tuned for that. You can see a screenshot of the app in action at the top of this post.&lt;/p&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>A Couple Of Adventures With The Mta Turnstile Dataset</title>
+   <link href="http://localhost:4000/2019/01/12/A-Couple-of-Adventures-with-the-MTA-Turnstile-Dataset/"/>
+   <updated>2019-01-12T00:00:00-06:00</updated>
+   <id>http://localhost:4000/2019/01/12/A-Couple-of-Adventures-with-the-MTA-Turnstile-Dataset</id>
+   <content type="html">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;/h1&gt;
+
+&lt;p&gt;When I started my first week at Metis Data Science Bootcamp, I learned about the first project I would have to complete: exploratory data analysis (EDA) on the &lt;a href=&quot;http://web.mta.info/developers/turnstile.html&quot;&gt;MTA Turnstile
+dataset&lt;/a&gt;. The point of the project was to advise a fictitious non-profit on the best stations and times to place their street teams advertising their summer gala, their main fundraiser. I learned a lot about EDA, and I’d like to share a few interesting things I learned along the way. I won’t go into the results of that analysis. Rather, this post is about a couple of tangents which caught my attention.&lt;/p&gt;
+
+&lt;p&gt;This post is split into two parts: an examination of the .diff() method in pandas, and a cursory exploration of whether the distribution of ridership among the subway stations of the MTA follow an Pareto distribution, or more generally a power law. To perform the data analysis, we used python and jupyter notebooks, with an emphasis on the pandas and matplotlib libraries.&lt;/p&gt;
+
+&lt;h2 id=&quot;using-the-diff-method&quot;&gt;Using the .diff() method&lt;/h2&gt;
+
+&lt;p&gt;My two partners, Max Barry and Stephen Ilhardt and I decided on the modest of goal of figuring out which station had the largest amount of traffic over roughly the period of May 2018. This ended up being a more difficult task than it at first sounded. The trouble was that the columns in the dataset which were labeled ‘ENTRIES’ and ‘EXITS’ were cumulative counts over long stretches of time. Some of these values were in the 100’s of billions. Clearly, some manipulation was required before this data could be of any use to us.&lt;/p&gt;
+
+&lt;p&gt;We ended up finding a quick solution to this problem. Since cumulative values come about through successive addition, taking the difference between consecutive values should undo it. All we had to do was group by the turnstile (represented by the columns ‘C/A’, ‘UNIT’, ‘SCP’, and ‘STATION’) and apply the .diff() function on a pandas dataframe. The following example also contains three lines that turn negative values into postives (who’s every heard of negative foot traffic?) and filters out unreasonably large values.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;turnstile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;C/A&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;UNIT&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;SCP&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;STATION&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Makes sure the index is the naturals. Necessary for diff() to work&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reset_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inplace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;drop&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sort_values&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;turnstile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'DATE'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'WEEKDAY'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TIME'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; 
+
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'TOTAL_ENTRIES'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TOTAL_EXITS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;groupby&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;turnstile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ENTRIES'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'EXITS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;diff&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# make negative values positive&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'TOTAL_ENTRIES'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TOTAL_EXITS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'TOTAL_ENTRIES'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TOTAL_EXITS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;abs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# filtering out values larger than 4000&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'TOTAL_ENTRIES'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'TOTAL_EXITS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This accomplishes what we were trying to achieve very quickly. Contrast with this more long winded strategy:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;turnstile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;C/A&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;UNIT&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;SCP&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;STATION&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sort_values&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;turnstile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'DATE'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'WEEKDAY'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TIME'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'PREV_TIME'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'PREV_ENTRIES'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'PREV_EXITS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; \
+                            &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;groupby&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;turnstile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'TIME'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ENTRIES'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'EXITS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;\
+                            &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;transform&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shift&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;get_entry_counts&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;row&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;max_counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;row&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ENTRIES&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;row&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;PREV_ENTRIES&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;max_counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; 
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; 
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;get_exit_counts&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;row&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;max_counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;row&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;EXITS&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;row&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;PREV_EXITS&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;max_counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# cut off any entries and exits that were greater than 4000&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# took difference between consecutive counts&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ENTRY_COUNTS&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;get_entry_counts&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;max_counter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;EXIT_COUNTS&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;get_exit_counts&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;max_counter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The moral of this story is that there is often more than one way to accomplish the same thing. I personally find the .diff() example more readable, but there is of course other criterion for code. For example, perhaps the latter block of code is more computationally efficient. So, how do they compare?&lt;/p&gt;
+
+&lt;p&gt;When I timed the first block, it took 3.59 seconds to complete. The second block took 42.8 seconds to complete. The second example took a good order of magnitude longer to execute. It seems that .diff() is optimized to handle this sort of operation.&lt;/p&gt;
+
+&lt;h2 id=&quot;but-is-it-a-pareto-distribution&quot;&gt;But is it a Pareto Distribution?&lt;/h2&gt;
+
+&lt;p&gt;After the project was completed, I decided to go down a rabbit hole. I’ve heard in the past that many phenomena in nature happen to follow a Pareto distribution (e.g., wealth distribution and the population distribution between human settlements). When I looked at a graph of the most trafficked stations ordered by popularity, it seemed to follow a similar pattern. The below graph shows the total foot traffic for roughly the month of May.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/Pareto.svg&quot; alt=&quot;Stations by Total Foot Traffic&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;the-pareto-distribution&quot;&gt;The Pareto Distribution&lt;/h3&gt;
+
+&lt;p&gt;The Pareto Distribution is a probability distribution which is notable for its description of many natural phenomena, as well as its inability to be adequately described by common summary statistics such as mean and standard deviation.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Probability_density_function_of_Pareto_distribution.svg.png&quot; alt=&quot;Pareto Distribution&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As can be seen from the above image, it is a power law distribution. For that reason, I will end up attempting to fit a general power distribution to the&lt;/p&gt;
+
+&lt;h3 id=&quot;the-20-80-principle&quot;&gt;The 20-80 Principle&lt;/h3&gt;
+
+&lt;p&gt;“The &lt;a href=&quot;https://en.wikipedia.org/wiki/Pareto_principle&quot;&gt;Pareto principle&lt;/a&gt; states that, for many events, roughly 80% of the effects come from 20% of the causes.” - Wikipedia&lt;/p&gt;
+
+&lt;p&gt;I did a calculation of the top 20% of stations by total foot traffic. They accounted for 60% of the traffic. This is one mark against following a classic Pareto distribution, though it should be noted that the 20-80 rule is not a hard and fast determination of whether something is a Pareto distribution. The distribution has parameters that can change; and when they change, the level of inequality grows.&lt;/p&gt;
+
+&lt;p&gt;The application of this finding to our imaginary client would of course be that focusing only the most popular stations would be sufficient to reach most of the ridership of the MTA. Of course, my client wouldn’t care if this data &lt;em&gt;really&lt;/em&gt; follows a Pareto distribution, but, for some reason, I did.&lt;/p&gt;
+
+&lt;h3 id=&quot;attempting-a-fit&quot;&gt;Attempting a Fit&lt;/h3&gt;
+
+&lt;p&gt;So, here’s what I came up with:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/fit_first_attempt.svg&quot; alt=&quot;First Attempt&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As you can probably see, this is not a very good fit. It quickly dips way below the observed data, before going way over it, and then permanently dipping below it again and even into the negatives. This is basically a disaster.&lt;/p&gt;
+
+&lt;p&gt;After doing a little bit of research, I learned that the tails of power-law distributions in general tend to deviate away from the distribution. I cut off both the highest values as well as the lowest values to see if the middle section fit any better.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;images/fit_second_attempt.svg&quot; alt=&quot;Second Attempt&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This definitely still shows that same behavior as before (i.e., under –&amp;gt; over –&amp;gt; under), but this deviation appears to be much less severe than in the first fit. This is actually quite promising.&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion?&lt;/h3&gt;
+
+&lt;p&gt;I didn’t have time to do rigorous analysis on this data. In my research, I find an interesting &lt;a href=&quot;https://arxiv.org/pdf/0706.1062.pdf&quot;&gt;article&lt;/a&gt; available on arXiv.org arguing that the occurrence of power-laws in empirical data have been vastly over-stated. One thing I would like to do in the future is apply the &lt;a href=&quot;https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test&quot;&gt;Kolmogorov-Smirnov test&lt;/a&gt; on this data as outlined in the arXiv article to come to a more conclusive result. They even have some &lt;a href=&quot;http://tuvalu.santafe.edu/~aaronc/powerlaws/&quot;&gt;code&lt;/a&gt; up that looks interesting!&lt;/p&gt;
+
+&lt;p&gt;In conclusion, I don’t have too much of a conclusion. I’m pretty confident in saying that the full empirical distribution as observed is not obeying a power law. But, the middle section seems like it could be more promising. If I had spent more time trying to find the right initial estimates for a fit, then maybe an even nicer fit would have popped up. Regardless, a take-away for me is to be more skeptical that a pure power-law or Pareto distribution is in front of me just because of some superficial similarities.&lt;/p&gt;
+
+</content>
+ </entry>
+ 
+
+</feed>
