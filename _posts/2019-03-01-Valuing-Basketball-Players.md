@@ -9,7 +9,7 @@ While I was growing up in San Antonio in the 2000’s, the one professional spor
 
 My objective was to determine whether a player had performed in manner consistent with their salary. Players are expensive, and accurate appraisal of talent is important in building a strong team. In other words, I wanted to find out which players gave the most bang for your buck.
 
-The plan was to build a model to predict the salaries of basketball players given their performance that year. The difference between my model's prediction of the salary and their actual salary would be the amount by which they were being overpaid or underpaid. If somebody is being underpaid with regards to their stats, then
+The plan was to build a model to predict the salaries of basketball players given their performance that year. The difference between my model's prediction of the salary and their actual salary would be the amount by which they were being overpaid or underpaid. If somebody is being underpaid with regards to their stats, then we should try to retain that player, seeing as we are getting a good deal. If we are overpaying, then we want to sign that player for less next contract, or possibly try to trade the player.
 
 ## Data Collection
 
