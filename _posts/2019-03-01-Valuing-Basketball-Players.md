@@ -17,7 +17,7 @@ The first step in answering this question was to find the right data. I found th
 
 Though I scraped as much info as I could from the the website, I only utilized a small selection. I focused on the per 36 minutes played statistics table and the Advanced Statistics table. (maybe include image here) An example of the per 36 minute statistics is Field Goals per 36 Minutes. 
 
-![Per 36 Minute Stats](images/per36.png)
+![Per 36 Minute Stats](../images/per36.png)
 
 ![Advanced Stats](images/adv.png)
 
