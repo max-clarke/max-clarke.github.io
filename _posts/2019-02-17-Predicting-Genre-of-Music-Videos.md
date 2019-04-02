@@ -9,7 +9,7 @@ For my third project at Metis I was required to explore classification technique
 
 Here's an example of its performance classifying a selection from the oeuvre of Smash Mouth: All-Star. 
 
-![Smash Mouth Prediction](images/predictor_appsmashmouth.png)
+![Smash Mouth Prediction](images/predictor_app_smashmouth.png)
 
 
 ## The Free Music Archive
